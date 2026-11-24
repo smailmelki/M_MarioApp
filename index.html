@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Super Mario Classic – ملكي منصف</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-wrapper">
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+        <!-- In-Game HUD -->
+        <div id="hud" class="hidden">
+            <div class="hud-group hud-stats">
+                <div class="hud-item" title="النقاط">
+                    <span class="hud-label">النقاط</span>
+                    <span id="hud-score" class="hud-value">000000</span>
+                </div>
+                <div class="hud-item" title="العملات">
+                    <span class="hud-icon">🪙</span>
+                    <span id="hud-coins" class="hud-value">00</span>
+                </div>
+                <div class="hud-item" title="الأرواح">
+                    <span class="hud-icon">❤️</span>
+                    <span id="hud-lives" class="hud-value">3</span>
+                </div>
+                <div class="hud-item" title="النجوم المخفية">
+                    <span class="hud-icon">⭐</span>
+                    <span id="hud-stars" class="hud-value">0/3</span>
+                </div>
+            </div>
+
+            <div class="hud-group hud-level-info">
+                <div class="hud-item">
+                    <span class="hud-label">العالم</span>
+                    <span id="hud-world" class="hud-value">1-1</span>
+                </div>
+                <div class="hud-item" title="الوقت المتبقي">
+                    <span class="hud-label">الوقت</span>
+                    <span id="hud-time" class="hud-value">300</span>
+                </div>
+            </div>
+
+            <div class="hud-group hud-actions">
+                <button id="btn-hud-restart" class="hud-btn" title="إعادة المستوى (R)" aria-label="إعادة المستوى">🔄</button>
+                <button id="btn-hud-pause" class="hud-btn" title="إيقاف مؤقت (Esc)" aria-label="إيقاف مؤقت">⏸️</button>
+            </div>
+        </div>
+
+        <!-- Boss Health Bar -->
+        <div id="boss-hud" class="hidden">
+            <span id="boss-name">زعيم العالم</span>
+            <div class="boss-hp-track">
+                <div id="boss-hp-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <!-- Powerup / Notification Banner -->
+        <div id="toast-banner" class="hidden"></div>
+
+        <!-- Touch Controls for Mobile / Tablet -->
+        <div id="touch-controls" class="hidden">
+            <div class="touch-dpad">
+                <button id="touch-left" class="touch-btn touch-dir" aria-label="يسار">◀</button>
+                <button id="touch-right" class="touch-btn touch-dir" aria-label="يمين">▶</button>
+            </div>
+            <div class="touch-actions">
+                <button id="touch-fire" class="touch-btn touch-action-btn" aria-label="جري / نار">🔥<span class="touch-sub">جري/نار</span></button>
+                <button id="touch-jump" class="touch-btn touch-jump-btn" aria-label="قفز">⬆️<span class="touch-sub">قفز</span></button>
+            </div>
+        </div>
+
+        <!-- MAIN MENU -->
+        <div id="screen-main" class="overlay-screen">
+            <div class="menu-card main-card">
+                <div class="game-badge">إصدار 8-Bit كلاسيكي مطور</div>
+                <h1 class="game-title">Super Mario Classic</h1>
+                <h2 class="game-subtitle">ملكي منصف</h2>
+                <p class="dev-credit">تطوير: <strong>ملكي منصف</strong></p>
+
+                <div class="menu-stats-bar">
+                    <span>🏆 أعلى نتيجة: <strong id="menu-highscore">0</strong></span>
+                    <span>🪙 العملات: <strong id="menu-totalcoins">0</strong></span>
+                    <span>⭐ النجوم: <strong id="menu-totalstars">0</strong>/120</span>
+                </div>
+
+                <div class="menu-buttons">
+                    <button id="btn-continue" class="btn btn-primary hidden">▶ متابعة اللعب (<span id="continue-label">1-1</span>)</button>
+                    <button id="btn-new-game" class="btn btn-accent">🎮 بدء لعبة جديدة</button>
+                    <button id="btn-level-select" class="btn btn-secondary">🗺️ اختيار العالم والمستوى</button>
+                    <div class="menu-row-2">
+                        <button id="btn-how-to-play" class="btn btn-outline">📖 طريقة اللعب</button>
+                        <button id="btn-achievements" class="btn btn-outline">🏅 الإنجازات</button>
+                        <button id="btn-settings" class="btn btn-outline">⚙️ الإعدادات</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORLD & LEVEL SELECT -->
+        <div id="screen-levels" class="overlay-screen hidden">
+            <div class="menu-card wide-card">
+                <div class="card-header">
+                    <h2>🗺️ العوالم والمستويات (40 مستوى)</h2>
+                    <button class="btn-close" data-back="screen-main">✖</button>
+                </div>
+                <div id="worlds-tabs" class="worlds-tabs"></div>
+                <div id="world-description" class="world-desc"></div>
+                <div id="levels-grid" class="levels-grid"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="screen-settings" class="overlay-screen hidden">
+            <div class="menu-card">
+                <div class="card-header">
+                    <h2>⚙️ الإعدادات</h2>
+                    <button class="btn-close" data-back="screen-main">✖</button>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-row">
+                        <label for="opt-music">🎵 الموسيقى الخلفية</label>
+                        <input type="checkbox" id="opt-music" checked>
+                    </div>
+                    <div class="setting-row">
+                        <label for="opt-music-vol">🔊 مستوى صوت الموسيقى</label>
+                        <input type="range" id="opt-music-vol" min="0" max="100" value="45">
+                    </div>
+                    <div class="setting-row">
+                        <label for="opt-sfx">💥 المؤثرات الصوتية</label>
+                        <input type="checkbox" id="opt-sfx" checked>
+                    </div>
+                    <div class="setting-row">
+                        <label for="opt-sfx-vol">🔉 مستوى صوت المؤثرات</label>
+                        <input type="range" id="opt-sfx-vol" min="0" max="100" value="75">
+                    </div>
+                    <div class="setting-row">
+                        <label for="opt-touch">📱 أزرار اللمس</label>
+                        <select id="opt-touch">
+                            <option value="auto">تلقائي (للهواتف)</option>
+                            <option value="on">مفعّلة دائماً</option>
+                            <option value="off">مخفية</option>
+                        </select>
+                    </div>
+                    <div class="setting-divider"></div>
+                    <div class="setting-row danger-zone">
+                        <span>🗑️ إعادة ضبط التقدم المحفوظ</span>
+                        <button id="btn-reset-progress" class="btn btn-danger btn-sm">مسح التقدم</button>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" data-back="screen-main">حفظ والعودة</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HOW TO PLAY -->
+        <div id="screen-howto" class="overlay-screen hidden">
+            <div class="menu-card wide-card">
+                <div class="card-header">
+                    <h2>📖 طريقة اللعب</h2>
+                    <button class="btn-close" data-back="screen-main">✖</button>
+                </div>
+                <div class="howto-grid">
+                    <div class="howto-box">
+                        <h3>⌨️ التحكم بالحاسوب</h3>
+                        <ul>
+                            <li><strong>الأسهم</strong> أو <strong>WASD</strong>: الحركة يميناً ويساراً</li>
+                            <li><strong>Space</strong> أو <strong>W / ↑</strong>: القفز (اضغط أطول لقفزة أعلى)</li>
+                            <li><strong>Shift</strong> أو <strong>Z / X</strong>: الجري السريع وإطلاق الكرات النارية</li>
+                            <li><strong>S / ↓</strong> فوق الأنابيب: الدخول إلى الممرات السرية</li>
+                            <li><strong>Escape</strong>: إيقاف مؤقت</li>
+                        </ul>
+                    </div>
+                    <div class="howto-box">
+                        <h3>📱 التحكم بالهاتف</h3>
+                        <ul>
+                            <li>أزرار الاتجاه على اليسار للحركة</li>
+                            <li>زر <strong>قفز</strong> للقفز فوق العقبات والأعداء</li>
+                            <li>زر <strong>جري/نار</strong> للجري السريع أو إطلاق النار</li>
+                            <li>يدعم الوضع الأفقي والرأسي</li>
+                        </ul>
+                    </div>
+                    <div class="howto-box">
+                        <h3>🎁 المكافآت والقوى</h3>
+                        <ul>
+                            <li>🍄 <strong>فطر القوة:</strong> يكبّر حجمك ويحميك من ضربة</li>
+                            <li>🔥 <strong>زهرة النار:</strong> تتيح إطلاق كرات نارية</li>
+                            <li>⭐ <strong>نجمة الحصانة:</strong> حصانة مؤقتة وسرعة</li>
+                            <li>💚 <strong>قلب الحياة:</strong> يمنحك حياة إضافية (أو جمع 100 عملة)</li>
+                            <li>🌟 <strong>النجوم المخفية:</strong> 3 نجوم سرية في كل مستوى</li>
+                        </ul>
+                    </div>
+                    <div class="howto-box">
+                        <h3>👾 الأعداء والزعماء</h3>
+                        <ul>
+                            <li>اقفز فوق الأعداء العاديين والطائرين للقضاء عليهم</li>
+                            <li>الأعداء المدرّعون (ذوو الأشواك) تخطَّهم أو استخدم الكرات النارية</li>
+                            <li>في نهاية كل عالم (المستوى 5) يواجهك <strong>زعيم خاص</strong>!</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-primary" data-back="screen-main">فهمت، لنلعب!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENTS -->
+        <div id="screen-achievements" class="overlay-screen hidden">
+            <div class="menu-card wide-card">
+                <div class="card-header">
+                    <h2>🏅 الإنجازات</h2>
+                    <button class="btn-close" data-back="screen-main">✖</button>
+                </div>
+                <div id="achievements-list" class="achievements-grid"></div>
+            </div>
+        </div>
+
+        <!-- PAUSE MENU -->
+        <div id="screen-pause" class="overlay-screen hidden">
+            <div class="menu-card">
+                <h2>⏸️ اللعبة متوقفة مؤقتاً</h2>
+                <p id="pause-level-label" class="muted-text">العالم 1 - المستوى 1</p>
+                <div class="menu-buttons">
+                    <button id="btn-resume" class="btn btn-primary">▶ استئناف اللعب</button>
+                    <button id="btn-pause-restart" class="btn btn-secondary">🔄 إعادة المستوى</button>
+                    <button id="btn-pause-settings" class="btn btn-outline">⚙️ الإعدادات</button>
+                    <button id="btn-pause-menu" class="btn btn-danger">🏠 القائمة الرئيسية</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL COMPLETE -->
+        <div id="screen-level-clear" class="overlay-screen hidden">
+            <div class="menu-card result-card">
+                <div class="result-icon">🏁</div>
+                <h2>أحسنت! تم اجتياز المستوى</h2>
+                <p id="clear-level-name" class="muted-text"></p>
+                <div class="result-stats">
+                    <div class="stat-box"><span>النقاط</span><strong id="clear-score">0</strong></div>
+                    <div class="stat-box"><span>مكافأة الوقت</span><strong id="clear-time-bonus">0</strong></div>
+                    <div class="stat-box"><span>العملات</span><strong id="clear-coins">0</strong></div>
+                    <div class="stat-box"><span>النجوم</span><strong id="clear-stars">0/3</strong></div>
+                </div>
+                <div class="menu-buttons">
+                    <button id="btn-next-level" class="btn btn-primary">⏭️ المستوى التالي</button>
+                    <button id="btn-clear-replay" class="btn btn-secondary">🔄 إعادة المستوى</button>
+                    <button id="btn-clear-menu" class="btn btn-outline">🏠 القائمة الرئيسية</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME OVER -->
+        <div id="screen-gameover" class="overlay-screen hidden">
+            <div class="menu-card result-card gameover-card">
+                <div class="result-icon">💀</div>
+                <h2>انتهت الأرواح!</h2>
+                <p class="muted-text">لا تستسلم، يمكنك المحاولة مجدداً</p>
+                <div class="result-stats">
+                    <div class="stat-box"><span>النتيجة</span><strong id="gameover-score">0</strong></div>
+                    <div class="stat-box"><span>أعلى نتيجة</span><strong id="gameover-highscore">0</strong></div>
+                </div>
+                <div class="menu-buttons">
+                    <button id="btn-retry" class="btn btn-primary">🔄 إعادة المحاولة</button>
+                    <button id="btn-gameover-menu" class="btn btn-outline">🏠 القائمة الرئيسية</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINAL VICTORY -->
+        <div id="screen-victory" class="overlay-screen hidden">
+            <div class="menu-card result-card victory-card">
+                <div class="result-icon">👑</div>
+                <h2>تهانينا! لقد أنهيت اللعبة بالكامل!</h2>
+                <p>لقد هزمت الزعيم الأخير وحررت الممالك الثمانية!</p>
+                <p class="dev-credit">شكراً للعب <strong>Super Mario Classic – ملكي منصف</strong></p>
+                <div class="result-stats">
+                    <div class="stat-box"><span>النتيجة النهائية</span><strong id="victory-score">0</strong></div>
+                    <div class="stat-box"><span>إجمالي العملات</span><strong id="victory-coins">0</strong></div>
+                    <div class="stat-box"><span>النجوم</span><strong id="victory-stars">0/120</strong></div>
+                </div>
+                <div class="menu-buttons">
+                    <button id="btn-victory-levels" class="btn btn-primary">🗺️ استكشاف المستويات</button>
+                    <button id="btn-victory-menu" class="btn btn-outline">🏠 القائمة الرئيسية</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONFIRM RESET MODAL -->
+        <div id="screen-confirm" class="overlay-screen hidden">
+            <div class="menu-card">
+                <h3>⚠️ تأكيد مسح التقدم</h3>
+                <p>هل أنت متأكد من رغبتك في مسح جميع المستويات المفتوحة والنتائج والعملات؟ لا يمكن التراجع عن هذه الخطوة.</p>
+                <div class="menu-row-2">
+                    <button id="btn-confirm-yes" class="btn btn-danger">نعم، امسح التقدم</button>
+                    <button id="btn-confirm-no" class="btn btn-primary">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ordered Game Scripts (Works directly via file:// or any HTTP server) -->
+    <script src="js/constants.js" defer></script>
+    <script src="js/storage.js" defer></script>
+    <script src="js/audio.js" defer></script>
+    <script src="js/sprites.js" defer></script>
+    <script src="js/entities.js" defer></script>
+    <script src="js/levels.js" defer></script>
+    <script src="js/engine.js" defer></script>
+    <script src="js/ui.js" defer></script>
+    <script src="js/main.js" defer></script>
+</body>
+</html>

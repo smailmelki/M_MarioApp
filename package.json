@@ -1,0 +1,11 @@
+{
+  "name": "super-mario-classic-monsif",
+  "version": "1.0.0",
+  "description": "Super Mario Classic – ملكي منصف (2D HTML5 Canvas Platformer)",
+  "main": "index.html",
+  "scripts": {
+    "verify": "node scripts/verify.js"
+  },
+  "author": "ملكي منصف",
+  "license": "MIT"
+}
